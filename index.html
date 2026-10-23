@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Lärmkarte Bremen: hohe Lärmbelastung anonym melden und auf der Karte ansehen.">
+  <meta name="theme-color" content="#14213d">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+  <title>Lärmkarte Bremen</title>
+</head>
+<body>
+  <a class="skip-link" href="#report-btn">Zum Melde-Button springen</a>
+
+  <header class="topbar">
+    <h1 class="topbar__title">Lärmkarte Bremen</h1>
+    <button type="button" class="icon-btn" id="filter-btn" aria-haspopup="dialog" aria-controls="filter-dialog">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 5h18l-7 8v6l-4-2v-4z"/></svg>
+      <span>Filter</span>
+    </button>
+    <button type="button" class="icon-btn" id="menu-btn" aria-haspopup="dialog" aria-controls="info-dialog">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke-width="2"/><path d="M12 10.5v6M12 7.5v.01" fill="none" stroke-width="2.4" stroke-linecap="round"/></svg>
+      <span>Info</span>
+    </button>
+  </header>
+
+  <div id="demo-banner" class="banner demo-only">
+    Demo-Version: Meldungen werden nur in diesem Browser gespeichert und sind für andere nicht sichtbar.
+  </div>
+
+  <main id="map" aria-label="Karte von Bremen mit Lärmmeldungen"></main>
+
+  <div id="status" class="status" role="status" aria-live="polite"></div>
+
+  <aside class="legend" aria-label="Legende">
+    <span class="legend__item"><span class="dot dot--1" aria-hidden="true">1</span>laut</span>
+    <span class="legend__item"><span class="dot dot--2" aria-hidden="true">2</span>sehr laut</span>
+    <span class="legend__item"><span class="dot dot--3" aria-hidden="true">3</span>unerträglich</span>
+  </aside>
+
+  <div class="actions">
+    <button type="button" class="btn btn--round" id="locate-btn" aria-label="Meine Position anzeigen">
+      <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" fill="none" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="7.5" fill="none" stroke-width="2"/></svg>
+    </button>
+    <button type="button" class="btn btn--primary btn--big" id="report-btn">Lärm melden</button>
+  </div>
+
+  <!-- Auswahl der Position beim Melden -->
+  <div id="pick-overlay" class="pick" hidden>
+    <div class="pick__crosshair" aria-hidden="true"></div>
+    <div class="pick__bar">
+      <p class="pick__hint">Verschiebe die Karte, bis das Kreuz auf dem lauten Ort liegt.</p>
+      <div class="pick__buttons">
+        <button type="button" class="btn" id="pick-cancel">Abbrechen</button>
+        <button type="button" class="btn btn--primary" id="pick-confirm">Hier melden</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schritt 1: Wo ist es laut? -->
+  <dialog id="where-dialog" class="sheet" aria-labelledby="where-title">
+    <h2 id="where-title">Wo ist es laut?</h2>
+    <div class="stack">
+      <button type="button" class="btn btn--primary btn--big" id="where-gps">Meine aktuelle Position</button>
+      <button type="button" class="btn btn--big" id="where-map">Punkt auf der Karte wählen</button>
+      <button type="button" class="btn btn--link" data-close>Abbrechen</button>
+    </div>
+  </dialog>
+
+  <!-- Schritt 2: Meldeformular -->
+  <dialog id="report-dialog" class="sheet" aria-labelledby="report-title">
+    <form id="report-form" method="dialog" novalidate>
+      <h2 id="report-title">Lärm melden</h2>
+      <p class="muted" id="report-location"></p>
+
+      <fieldset>
+        <legend>Wie laut ist es?</legend>
+        <div class="choices choices--3">
+          <label class="choice choice--l1"><input type="radio" name="level" value="1" required><span><b>1</b> laut</span></label>
+          <label class="choice choice--l2"><input type="radio" name="level" value="2"><span><b>2</b> sehr laut</span></label>
+          <label class="choice choice--l3"><input type="radio" name="level" value="3"><span><b>3</b> unerträglich</span></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Art des Lärms</legend>
+        <div class="choices" id="category-choices"></div>
+      </fieldset>
+
+      <label class="field">
+        <span>Kommentar <span class="muted">(optional)</span></span>
+        <textarea name="comment" id="comment" maxlength="200" rows="2" placeholder="z. B. Laubbläser seit 7 Uhr"></textarea>
+        <span class="muted counter" id="comment-counter" aria-live="polite">0 / 200</span>
+      </label>
+
+      <p class="error" id="report-error" role="alert"></p>
+
+      <div class="row">
+        <button type="button" class="btn" data-close>Abbrechen</button>
+        <button type="submit" class="btn btn--primary" id="report-submit">Meldung senden</button>
+      </div>
+      <p class="muted small live-only">Anonym, ohne Anmeldung. Deine Meldung ist für alle sichtbar und wird nach 30&nbsp;Tagen gelöscht. Es werden keine IP-Adressen gespeichert.</p>
+      <p class="muted small demo-only">Demo: Deine Meldung wird nur in diesem Browser gespeichert. Es wird nichts an einen Server gesendet.</p>
+    </form>
+  </dialog>
+
+  <!-- Missbrauch melden -->
+  <dialog id="flag-dialog" class="sheet" aria-labelledby="flag-title">
+    <form id="flag-form" method="dialog">
+      <h2 id="flag-title">Meldung als unangemessen markieren?</h2>
+      <p class="live-only">Wenn mehrere Personen eine Meldung markieren, wird sie automatisch ausgeblendet.</p>
+      <p class="demo-only">In der echten Version wird eine Meldung ausgeblendet, wenn mehrere Personen sie markieren. In dieser Demo verschwindet sie sofort, aber nur in deinem Browser.</p>
+      <p class="error" id="flag-error" role="alert"></p>
+      <div class="row">
+        <button type="button" class="btn" data-close>Abbrechen</button>
+        <button type="submit" class="btn btn--danger" id="flag-submit">Markieren</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Filter -->
+  <dialog id="filter-dialog" class="sheet" aria-labelledby="filter-title">
+    <form id="filter-form" method="dialog">
+      <h2 id="filter-title">Anzeige &amp; Filter</h2>
+      <fieldset>
+        <legend>Ansicht</legend>
+        <div class="choices choices--2">
+          <label class="choice"><input type="radio" name="view" value="markers" checked><span>Marker</span></label>
+          <label class="choice"><input type="radio" name="view" value="heat"><span>Heatmap</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Zeitraum</legend>
+        <div class="choices choices--3">
+          <label class="choice"><input type="radio" name="hours" value="24"><span>24 Std.</span></label>
+          <label class="choice"><input type="radio" name="hours" value="168" checked><span>7 Tage</span></label>
+          <label class="choice"><input type="radio" name="hours" value="720"><span>30 Tage</span></label>
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Lärmart</legend>
+        <div class="choices" id="filter-categories"></div>
+      </fieldset>
+      <div class="row">
+        <button type="submit" class="btn btn--primary">Fertig</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Info -->
+  <dialog id="info-dialog" class="sheet" aria-labelledby="info-title">
+    <h2 id="info-title">Über die Lärmkarte</h2>
+    <p class="live-only">Hier kann jede und jeder ohne Anmeldung melden, wo es in Bremen gerade besonders laut ist. Alle Meldungen sind öffentlich auf der Karte sichtbar und werden nach 30&nbsp;Tagen automatisch gelöscht.</p>
+    <p class="demo-only">Hier kann man melden, wo es in Bremen gerade besonders laut ist. Dies ist eine <strong>Demo-Version</strong>: Die Beispielmeldungen sind erfunden, und eigene Meldungen werden nur in diesem Browser gespeichert. Andere sehen sie nicht.</p>
+    <p>Die Meldungen sind subjektive Einschätzungen, keine Messwerte.</p>
+    <ul class="links">
+      <li><a href="datenschutz.html">Datenschutz</a></li>
+      <li><a href="impressum.html">Impressum</a></li>
+    </ul>
+    <p class="muted small">Kartendaten © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende</p>
+    <div class="row">
+      <button type="button" class="btn demo-only" id="reset-demo">Eigene Meldungen löschen</button>
+      <button type="button" class="btn btn--primary" data-close>Schließen</button>
+    </div>
+  </dialog>
+
+  <script src="leaflet.js"></script>
+  <script src="leaflet-heat.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

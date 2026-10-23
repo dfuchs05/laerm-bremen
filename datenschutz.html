@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="page.css">
+  <title>Datenschutz – Lärmkarte Bremen</title>
+</head>
+<body>
+  <header><a href="index.html">← Zurück zur Lärmkarte</a></header>
+  <main>
+    <h1>Datenschutzerklärung</h1>
+
+    <p class="warning" role="note">
+      VORLAGE – NICHT VERÖFFENTLICHUNGSREIF. Dieser Text beschreibt den technischen
+      Aufbau der App. Er muss vor der Veröffentlichung vollständig ausgefüllt und
+      rechtlich geprüft werden, insbesondere zu Supabase (Auftragsverarbeitung),
+      GitHub Pages (Drittlandübermittlung in die USA) und den OpenStreetMap-Kacheln.
+      Alle <span class="placeholder">gelb markierten</span> Stellen sind zu ersetzen.
+    </p>
+
+    <h2>1. Verantwortliche Stelle</h2>
+    <p><span class="placeholder">[Name, Anschrift, E-Mail]</span></p>
+
+    <h2>2. Welche Daten verarbeitet werden</h2>
+    <p>Die Nutzung ist ohne Anmeldung möglich. Wenn du eine Lärmmeldung abgibst, speichern wir:</p>
+    <ul>
+      <li>den gemeldeten Ort (Koordinaten des gewählten Punktes bzw. deiner GPS-Position zum Zeitpunkt der Meldung),</li>
+      <li>Zeitpunkt, Lautstärke-Stufe, Art des Lärms und deinen optionalen Kommentar,</li>
+      <li>einen gesalzenen, nicht umkehrbaren Hash einer zufälligen Kennung, die in deinem Browser
+        erzeugt wird. Er dient nur dazu, Missbrauch zu begrenzen (z.&nbsp;B. höchstens 10 Meldungen
+        pro Tag). Die Kennung selbst wird nicht gespeichert.</li>
+    </ul>
+    <p>
+      In unserer Datenbank werden <strong>keine IP-Adressen</strong> gespeichert. Es gibt kein
+      Tracking, keine Analyse-Tools, keine Cookies und keine externen Schriftarten.
+    </p>
+    <p>
+      Gemeldeter Ort und Kommentar sind öffentlich sichtbar. Bitte gib im Kommentar keine
+      personenbezogenen Daten an (Namen, Kennzeichen o.&nbsp;Ä.).
+    </p>
+
+    <h2>3. Speicherdauer</h2>
+    <p>
+      Meldungen werden nach 30 Tagen nicht mehr angezeigt und anschließend gelöscht.
+      Markierungen („Meldung melden“) werden ebenfalls nach 30 Tagen gelöscht.
+    </p>
+
+    <h2>4. Standortabfrage</h2>
+    <p>
+      Nur wenn du „Meine Position“ oder „Meine aktuelle Position“ antippst, fragt dein Browser
+      um Erlaubnis, den Standort zu verwenden. Die Position wird nur übertragen, wenn du
+      anschließend eine Meldung absendest.
+    </p>
+
+    <h2>5. Eingesetzte Dienste</h2>
+    <ul>
+      <li>
+        <strong>Hosting der Webseite:</strong> GitHub Pages (GitHub, Inc., USA). Beim Aufruf
+        verarbeitet GitHub technisch notwendige Verbindungsdaten, u.&nbsp;a. die IP-Adresse.
+        <span class="placeholder">[Rechtsgrundlage und Drittlandübermittlung prüfen]</span>
+      </li>
+      <li>
+        <strong>Datenbank:</strong> Supabase
+        (<span class="placeholder">[Region, z.&nbsp;B. Frankfurt (eu-central-1)]</span>).
+        Beim Laden und Absenden von Meldungen verarbeitet Supabase technisch notwendige
+        Verbindungsdaten, u.&nbsp;a. die IP-Adresse, in seinen Server-Protokollen.
+        <span class="placeholder">[AV-Vertrag und Rechtsgrundlage prüfen]</span>
+      </li>
+      <li>
+        <strong>Kartenkacheln:</strong> OpenStreetMap Foundation (tile.openstreetmap.org).
+        Dein Browser lädt die Kartenbilder direkt von dort; dabei wird deine IP-Adresse übermittelt.
+        <span class="placeholder">[prüfen]</span>
+      </li>
+    </ul>
+
+    <h2>6. Lokale Speicherung im Browser</h2>
+    <p>
+      Im localStorage deines Browsers werden die zufällige Kennung, deine Filter-Einstellungen
+      und die von dir markierten Meldungen gespeichert. Du kannst sie über die Einstellungen
+      deines Browsers löschen.
+    </p>
+
+    <h2>7. Deine Rechte</h2>
+    <p>
+      <span class="placeholder">[Auskunft, Berichtigung, Löschung, Widerspruch, Beschwerderecht bei
+      der Landesbeauftragten für Datenschutz und Informationsfreiheit Bremen – rechtlich prüfen und
+      ausformulieren. Hinweis: Da Meldungen anonym sind, ist eine Zuordnung zu einer Person in der
+      Regel nicht möglich.]</span>
+    </p>
+
+    <p><em>Stand: <span class="placeholder">[Datum]</span></em></p>
+  </main>
+</body>
+</html>
