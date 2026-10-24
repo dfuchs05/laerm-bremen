@@ -32,9 +32,25 @@ async function request(path, options = {}) {
   return data;
 }
 
-async function rpc(name, params) {
-  const data = await request(`rpc/${name}`, { method: 'POST', body: JSON.stringify(params) });
-  if (!data?.ok) throw new ApiError(data?.error ?? 'unknown');
+// Schreiben geht nur über die Edge Functions, die das Captcha prüfen.
+async function callFunction(name, payload) {
+  let res;
+  try {
+    res = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, {
+      method: 'POST',
+      headers: headers(),
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    throw new ApiError('network');
+  }
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {
+    /* leer */
+  }
+  if (!data?.ok) throw new ApiError(data?.error ?? `http_${res.status}`);
   return data;
 }
 
@@ -51,21 +67,16 @@ export async function fetchReports({ hours, categories }) {
   return request(`reports?${params}`);
 }
 
-export async function submitReport({ lat, lng, level, category, comment }) {
+export async function submitReport({ lat, lng, level, category, comment, turnstileToken }) {
   if (DEMO_MODE) return demo.submitReport({ lat, lng, level, category, comment });
-  return rpc('submit_report', {
-    p_lat: lat,
-    p_lng: lng,
-    p_level: level,
-    p_category: category,
-    p_comment: comment,
-    p_device_id: deviceId(),
+  return callFunction('submit-report', {
+    lat, lng, level, category, comment, deviceId: deviceId(), turnstileToken,
   });
 }
 
-export async function flagReport({ reportId }) {
+export async function flagReport({ reportId, turnstileToken }) {
   if (DEMO_MODE) return demo.flagReport({ reportId });
-  return rpc('flag_report', { p_report_id: reportId, p_device_id: deviceId() });
+  return callFunction('flag-report', { reportId, deviceId: deviceId(), turnstileToken });
 }
 
 export const resetDemo = demo.resetDemo;

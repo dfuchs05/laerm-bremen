@@ -6,7 +6,8 @@
 -- vorhandene Meldungen bleiben dabei erhalten.
 --
 -- Prinzip: Der Browser darf die Tabelle nur LESEN. Schreiben geht nur über
--- die zwei Funktionen submit_report und flag_report, die alle Regeln prüfen.
+-- die Edge Functions (Captcha-Prüfung), die dann submit_report bzw.
+-- flag_report aufrufen. Diese prüfen alle übrigen Regeln.
 -- =============================================================================
 
 create extension if not exists pgcrypto with schema extensions;
@@ -236,10 +237,12 @@ begin
 end;
 $$;
 
--- Nur diese zwei Funktionen dürfen vom Browser aus aufgerufen werden.
-revoke all on function public.submit_report(double precision, double precision, smallint, text, text, uuid) from public;
-revoke all on function public.flag_report(uuid, uuid) from public;
-grant execute on function public.submit_report(double precision, double precision, smallint, text, text, uuid) to anon, authenticated;
-grant execute on function public.flag_report(uuid, uuid) to anon, authenticated;
+-- Die beiden Funktionen darf nur die service_role aufrufen, also nur die
+-- Edge Functions submit-report und flag-report, nachdem sie das Captcha
+-- geprüft haben. Direkt aus dem Browser sind sie gesperrt.
+revoke all on function public.submit_report(double precision, double precision, smallint, text, text, uuid) from public, anon, authenticated;
+revoke all on function public.flag_report(uuid, uuid) from public, anon, authenticated;
+grant execute on function public.submit_report(double precision, double precision, smallint, text, text, uuid) to service_role;
+grant execute on function public.flag_report(uuid, uuid) to service_role;
 
 revoke all on function private.device_hash(uuid) from public, anon, authenticated;

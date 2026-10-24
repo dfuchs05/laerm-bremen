@@ -2,12 +2,16 @@
 // HIER EINTRAGEN (Supabase → Project Settings → API):
 //   SUPABASE_URL      = "Project URL", z. B. https://abcdefgh.supabase.co
 //   SUPABASE_ANON_KEY = "anon public" key (eyJ...) oder "publishable key"
-// Beide Werte sind öffentlich und dürfen auf GitHub stehen.
+// UND (Cloudflare → Turnstile → dein Widget):
+//   TURNSTILE_SITE_KEY = "Site Key"
+// Alle drei Werte sind öffentlich und dürfen auf GitHub stehen.
+// NIEMALS den Turnstile "Secret Key" hier eintragen!
 // NIEMALS den "service_role"- oder "secret"-Key eintragen!
 // Bleiben die Felder leer, läuft die Seite im Demo-Modus.
 // ---------------------------------------------------------------------------
 export const SUPABASE_URL = 'https://wrmkekmzrmvacrtiqwlk.supabase.co';
 export const SUPABASE_ANON_KEY = 'sb_publishable_1JRzE6dWsFgkyJnp9LIlnA_qPoGc0dg';
+export const TURNSTILE_SITE_KEY = '0x4AAAAAAFjkfRE19407eopa';
 
 export const DEMO_MODE = !SUPABASE_URL || !SUPABASE_ANON_KEY;
 
@@ -41,6 +45,9 @@ export const ERROR_MESSAGES = {
   rate_limit_daily: 'Du hast heute schon sehr viel gemeldet. Bitte versuche es morgen wieder.',
   invalid_level: 'Bitte wähle aus, wie laut es ist.',
   invalid_category: 'Bitte wähle die Art des Lärms.',
+  captcha_missing: 'Bitte warte, bis die Sicherheitsprüfung abgeschlossen ist.',
+  captcha_failed: 'Die Sicherheitsprüfung ist fehlgeschlagen. Bitte versuche es noch einmal.',
+  captcha_unavailable: 'Die Sicherheitsprüfung konnte nicht geladen werden. Bitte lade die Seite neu.',
   busy: 'Gerade gehen sehr viele Meldungen ein. Bitte versuche es später noch einmal.',
   network: 'Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.',
   not_found: 'Diese Meldung gibt es nicht mehr.',

@@ -6,6 +6,7 @@ import {
   categoryLabel, errorMessage, inBremen,
 } from './config.js';
 import { load, save } from './storage.js';
+import { mountTurnstile } from './turnstile.js';
 
 const { L } = window;
 
@@ -324,7 +325,9 @@ comment.addEventListener('input', () => {
   $('#comment-counter').textContent = `${comment.value.length} / 200`;
 });
 
-function openReportForm(draft) {
+let reportWidget = null;
+
+async function openReportForm(draft) {
   state.draft = draft;
   form.reset();
   $('#comment-counter').textContent = '0 / 200';
@@ -333,7 +336,17 @@ function openReportForm(draft) {
     ? `Ort: deine aktuelle Position (Genauigkeit ca. ${Math.round(draft.accuracy)} m)`
     : 'Ort: der gewählte Punkt auf der Karte';
   openDialog($('#report-dialog'));
+  try {
+    reportWidget = await mountTurnstile($('#report-turnstile'), 'report');
+  } catch {
+    $('#report-error').textContent = errorMessage('captcha_unavailable');
+  }
 }
+
+$('#report-dialog').addEventListener('close', () => {
+  reportWidget?.remove();
+  reportWidget = null;
+});
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -344,6 +357,8 @@ form.addEventListener('submit', async (e) => {
 
   if (!level) return void (errorBox.textContent = errorMessage('invalid_level'));
   if (!category) return void (errorBox.textContent = errorMessage('invalid_category'));
+  const token = reportWidget?.getToken();
+  if (!token) return void (errorBox.textContent = errorMessage('captcha_missing'));
 
   const submit = $('#report-submit');
   submit.disabled = true;
@@ -356,6 +371,7 @@ form.addEventListener('submit', async (e) => {
       level,
       category,
       comment: String(data.get('comment') || '').trim() || null,
+      turnstileToken: token,
     });
     $('#report-dialog').close();
     // Eigene Meldung sofort sichtbar machen, falls sie zum Filter passt.
@@ -367,6 +383,7 @@ form.addEventListener('submit', async (e) => {
     toast('Danke! Deine Meldung ist jetzt auf der Karte.');
   } catch (err) {
     errorBox.textContent = errorMessage(err.code);
+    reportWidget?.reset();
   } finally {
     submit.disabled = false;
     submit.textContent = 'Meldung senden';
@@ -377,19 +394,33 @@ form.addEventListener('submit', async (e) => {
 // Missbrauch melden
 // ---------------------------------------------------------------------------
 
-function openFlagDialog(report) {
+let flagWidget = null;
+
+async function openFlagDialog(report) {
   state.flagTarget = report;
   map.closePopup();
   $('#flag-error').textContent = '';
   openDialog($('#flag-dialog'));
+  try {
+    flagWidget = await mountTurnstile($('#flag-turnstile'), 'flag');
+  } catch {
+    $('#flag-error').textContent = errorMessage('captcha_unavailable');
+  }
 }
+
+$('#flag-dialog').addEventListener('close', () => {
+  flagWidget?.remove();
+  flagWidget = null;
+});
 
 $('#flag-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const token = flagWidget?.getToken();
+  if (!token) return void ($('#flag-error').textContent = errorMessage('captcha_missing'));
   const btn = $('#flag-submit');
   btn.disabled = true;
   try {
-    const res = await flagReport({ reportId: state.flagTarget.id });
+    const res = await flagReport({ reportId: state.flagTarget.id, turnstileToken: token });
     state.flagged.add(state.flagTarget.id);
     save('laermkarte.flagged', [...state.flagged].slice(-500));
     $('#flag-dialog').close();
@@ -402,6 +433,7 @@ $('#flag-form').addEventListener('submit', async (e) => {
     }
   } catch (err) {
     $('#flag-error').textContent = errorMessage(err.code);
+    flagWidget?.reset();
   } finally {
     btn.disabled = false;
   }

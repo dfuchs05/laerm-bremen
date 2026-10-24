@@ -16,7 +16,7 @@
     <p class="warning" role="note">
       VORLAGE – NICHT VERÖFFENTLICHUNGSREIF. Dieser Text beschreibt den technischen
       Aufbau der App. Er muss vor der Veröffentlichung vollständig ausgefüllt und
-      rechtlich geprüft werden, insbesondere zu Supabase (Auftragsverarbeitung),
+      rechtlich geprüft werden, insbesondere zu Supabase (Auftragsverarbeitung), Cloudflare Turnstile,
       GitHub Pages (Drittlandübermittlung in die USA) und den OpenStreetMap-Kacheln.
       Alle <span class="placeholder">gelb markierten</span> Stellen sind zu ersetzen.
     </p>
@@ -68,6 +68,13 @@
         Beim Laden und Absenden von Meldungen verarbeitet Supabase technisch notwendige
         Verbindungsdaten, u.&nbsp;a. die IP-Adresse, in seinen Server-Protokollen.
         <span class="placeholder">[AV-Vertrag und Rechtsgrundlage prüfen]</span>
+      </li>
+      <li>
+        <strong>Schutz vor automatisierten Eingaben:</strong> Cloudflare Turnstile (Cloudflare, Inc., USA).
+        Wird erst geladen, wenn du das Melde- oder Markier-Formular öffnest. Dabei werden technische
+        Merkmale deines Browsers an Cloudflare übermittelt, um Bots zu erkennen. Deine IP-Adresse
+        schicken wir bei der Prüfung nicht mit.
+        <span class="placeholder">[Rechtsgrundlage und Drittlandübermittlung prüfen]</span>
       </li>
       <li>
         <strong>Kartenkacheln:</strong> OpenStreetMap Foundation (tile.openstreetmap.org).

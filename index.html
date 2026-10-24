@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Lärmkarte Bremen: hohe Lärmbelastung anonym melden und auf der Karte ansehen.">
   <meta name="theme-color" content="#14213d">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' data: https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; img-src 'self' data: https://tile.openstreetmap.org; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="leaflet.css">
@@ -96,6 +96,7 @@
         <span class="muted counter" id="comment-counter" aria-live="polite">0 / 200</span>
       </label>
 
+      <div class="turnstile" id="report-turnstile"></div>
       <p class="error" id="report-error" role="alert"></p>
 
       <div class="row">
@@ -113,6 +114,7 @@
       <h2 id="flag-title">Meldung als unangemessen markieren?</h2>
       <p class="live-only">Wenn mehrere Personen eine Meldung markieren, wird sie automatisch ausgeblendet.</p>
       <p class="demo-only">In der echten Version wird eine Meldung ausgeblendet, wenn mehrere Personen sie markieren. In dieser Demo verschwindet sie sofort, aber nur in deinem Browser.</p>
+      <div class="turnstile" id="flag-turnstile"></div>
       <p class="error" id="flag-error" role="alert"></p>
       <div class="row">
         <button type="button" class="btn" data-close>Abbrechen</button>
